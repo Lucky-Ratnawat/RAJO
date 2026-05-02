@@ -3,19 +3,19 @@ from __future__ import annotations
 from datetime import datetime, timezone
 from decimal import Decimal
 
-from fastapi import APIRouter, Depends, HTTPException, Query, status
+from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy import select
 from sqlalchemy.orm import Session, selectinload
 
+from app.api.deps import get_current_user, get_user_db
 from app.db.session import get_db
 from app.models.catalog import Product, ProductVariant
 from app.models.inventory import Inventory
 from app.models.ordering import Order, OrderItem
+from app.models.user import User
 from app.schemas.order import OrderCreate, OrderRead
 
 router = APIRouter()
-
-DEFAULT_BUYER_ID = 1
 
 
 def _build_order_number() -> str:
@@ -24,12 +24,12 @@ def _build_order_number() -> str:
 
 @router.get("", response_model=list[OrderRead])
 def list_orders(
-    user_id: int = Query(default=DEFAULT_BUYER_ID),
-    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_user_db),
 ) -> list[Order]:
     statement = (
         select(Order)
-        .where(Order.user_id == user_id)
+        .where(Order.user_id == current_user.id)
         .options(selectinload(Order.items))
         .order_by(Order.id.desc())
     )
@@ -37,16 +37,26 @@ def list_orders(
 
 
 @router.get("/{order_id}", response_model=OrderRead)
-def get_order(order_id: int, db: Session = Depends(get_db)) -> Order:
+def get_order(
+    order_id: int,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_user_db),
+) -> Order:
     statement = select(Order).where(Order.id == order_id).options(selectinload(Order.items))
     order = db.scalar(statement)
     if order is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Order not found.")
+    if current_user.role != "admin" and order.user_id != current_user.id:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Access denied.")
     return order
 
 
 @router.post("", response_model=OrderRead, status_code=status.HTTP_201_CREATED)
-def create_order(payload: OrderCreate, db: Session = Depends(get_db)) -> Order:
+def create_order(
+    payload: OrderCreate,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_user_db),
+) -> Order:
     if not payload.items:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Order requires items.")
 
@@ -109,7 +119,7 @@ def create_order(payload: OrderCreate, db: Session = Depends(get_db)) -> Order:
 
     order = Order(
         order_number=_build_order_number(),
-        user_id=DEFAULT_BUYER_ID,
+        user_id=current_user.id,
         status="pending",
         subtotal=subtotal,
         tax_amount=Decimal("0.00"),

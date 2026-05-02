@@ -11,6 +11,7 @@ FastAPI service for:
 Current API coverage includes:
 
 - public category and product listing
+- buyer registration, login, and profile lookup
 - admin CRUD for categories and products
 - admin inventory management
 - buyer order creation and order lookup
@@ -20,7 +21,7 @@ Current API coverage includes:
 
 1. Create a virtual environment and install dependencies.
 2. Copy `.env.example` to `.env`.
-3. Set `DATABASE_URL` to your local Postgres or Supabase connection string.
+3. Set `DATABASE_URL` and `JWT_SECRET_KEY`.
 4. Run migrations with Alembic.
 5. Start the API with Uvicorn.
 

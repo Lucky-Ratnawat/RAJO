@@ -7,6 +7,9 @@ class Settings(BaseSettings):
     api_prefix: str = "/api/v1"
     database_url: str = "sqlite:///./rajo.db"
     sql_echo: bool = False
+    jwt_secret_key: str = "<SECRET>"
+    jwt_algorithm: str = "HS256"
+    access_token_expire_minutes: int = 60 * 24
 
     model_config = SettingsConfigDict(
         env_file=".env",
