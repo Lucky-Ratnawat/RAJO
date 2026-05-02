@@ -3,7 +3,7 @@ from __future__ import annotations
 from decimal import Decimal
 
 from sqlalchemy import ForeignKey, Integer, JSON, Numeric, String, Text
-from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.models.base import Base, TimestampMixin
 
@@ -45,6 +45,10 @@ class Order(TimestampMixin, Base):
     notes: Mapped[str | None] = mapped_column(Text())
     shipping_address_snapshot: Mapped[dict | None] = mapped_column(JSON)
 
+    items: Mapped[list["OrderItem"]] = relationship(
+        back_populates="order", cascade="all, delete-orphan"
+    )
+
 
 class OrderItem(TimestampMixin, Base):
     __tablename__ = "order_items"
@@ -58,3 +62,5 @@ class OrderItem(TimestampMixin, Base):
     unit_price_snapshot: Mapped[Decimal] = mapped_column(Numeric(10, 2), nullable=False)
     quantity: Mapped[int] = mapped_column(Integer, nullable=False)
     line_total: Mapped[Decimal] = mapped_column(Numeric(12, 2), nullable=False)
+
+    order: Mapped[Order] = relationship(back_populates="items")

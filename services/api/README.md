@@ -8,6 +8,14 @@ FastAPI service for:
 - orders
 - notifications
 
+Current API coverage includes:
+
+- public category and product listing
+- admin CRUD for categories and products
+- admin inventory management
+- buyer order creation and order lookup
+- admin order status updates
+
 ## Local Setup
 
 1. Create a virtual environment and install dependencies.
