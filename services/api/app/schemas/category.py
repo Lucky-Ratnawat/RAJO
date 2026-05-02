@@ -1,13 +1,29 @@
 from pydantic import BaseModel, ConfigDict
 
 
-class CategoryRead(BaseModel):
-    id: int
+class CategoryBase(BaseModel):
     name: str
     slug: str
-    description: str | None
-    image_url: str | None
-    sort_order: int
-    is_active: bool
+    description: str | None = None
+    image_url: str | None = None
+    sort_order: int = 0
+    is_active: bool = True
+
+
+class CategoryCreate(CategoryBase):
+    pass
+
+
+class CategoryUpdate(BaseModel):
+    name: str | None = None
+    slug: str | None = None
+    description: str | None = None
+    image_url: str | None = None
+    sort_order: int | None = None
+    is_active: bool | None = None
+
+
+class CategoryRead(CategoryBase):
+    id: int
 
     model_config = ConfigDict(from_attributes=True)

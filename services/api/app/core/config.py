@@ -5,7 +5,7 @@ class Settings(BaseSettings):
     app_name: str = "RAJO API"
     app_version: str = "0.1.0"
     api_prefix: str = "/api/v1"
-    database_url: str = "<SECRET>"
+    database_url: str = "sqlite:///./rajo.db"
     sql_echo: bool = False
 
     model_config = SettingsConfigDict(
